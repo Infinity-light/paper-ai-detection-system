@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { DetectionBatch, Paper, PaperDetail } from '@/types';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
   timeout: 30000,
 });
 

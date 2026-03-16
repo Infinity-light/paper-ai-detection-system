@@ -6,10 +6,10 @@ services:
     container_name: paper_detection_postgres
     environment:
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: paper_detect_2026
       POSTGRES_DB: paper_detection
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     image: redis:7
     container_name: paper_detection_redis
     ports:
-      - "6379:6379"
+      - "16380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -35,9 +35,9 @@ services:
     build: ./backend
     container_name: paper_detection_backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
-      DATABASE_URL: postgresql://user:password@postgres:5432/paper_detection
+      DATABASE_URL: postgresql://user:paper_detect_2026@postgres:5432/paper_detection
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -62,7 +62,7 @@ services:
     container_name: paper_detection_celery
     command: celery -A app.tasks.detection_tasks worker --loglevel=info
     environment:
-      DATABASE_URL: postgresql://user:password@postgres:5432/paper_detection
+      DATABASE_URL: postgresql://user:paper_detect_2026@postgres:5432/paper_detection
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -81,7 +81,7 @@ services:
     build: ./frontend
     container_name: paper_detection_frontend
     ports:
-      - "3000:80"
+      - "3030:80"
     depends_on:
       - backend
     restart: unless-stopped
