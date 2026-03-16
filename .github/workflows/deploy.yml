@@ -1,0 +1,78 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL }}
+        run: |
+          ssh $SERVER_USER@$SERVER_IP << 'ENDSSH'
+            # 进入项目目录或克隆项目
+            if [ ! -d "/root/paper-ai-detection-system" ]; then
+              cd /root
+              git clone https://github.com/Infinity-light/paper-ai-detection-system.git
+              cd paper-ai-detection-system
+            else
+              cd /root/paper-ai-detection-system
+              git pull origin master
+            fi
+
+            # 创建.env文件
+            cat > .env << 'EOF'
+          DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL=${{ secrets.DEEPSEEK_BASE_URL }}
+          DATABASE_URL=postgresql://user:paper_detect_2026@postgres:5432/paper_detection
+          REDIS_URL=redis://redis:6379/0
+          UPLOAD_DIR=/data/uploads
+          RESULT_DIR=/data/results
+          HOST=0.0.0.0
+          PORT=8000
+          EOF
+
+            # 创建数据目录
+            mkdir -p data/uploads data/results
+
+            # 停止旧容器
+            docker-compose down || true
+
+            # 构建并启动新容器
+            docker-compose up -d --build
+
+            # 等待服务启动
+            sleep 15
+
+            # 初始化数据库
+            docker-compose exec -T backend python -c "from app.database import init_db; init_db()" || true
+
+            # 检查服务状态
+            docker-compose ps
+          ENDSSH
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f http://${{ secrets.SERVER_IP }}:8000/docs || exit 1
