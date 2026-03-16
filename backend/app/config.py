@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     deepseek_api_key: str = ""
     deepseek_api_base: str = "https://api.deepseek.com"
 
+    # SiliconFlow API配置
+    siliconflow_api_key: str = ""
+    siliconflow_api_base: str = "https://api.siliconflow.cn"
+    siliconflow_model: str = "BAAI/bge-m3"
+
     # 文件存储配置
     upload_dir: str = "/data/uploads"
     result_dir: str = "/data/results"

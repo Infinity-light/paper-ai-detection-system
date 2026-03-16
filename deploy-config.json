@@ -1,0 +1,16 @@
+{
+  "projectType": "multi-dir",
+  "serverIp": "47.98.171.82",
+  "sshUser": "root",
+  "sshPort": 22,
+  "sshKeyPath": "~/.ssh/id_rsa",
+  "domain": "papercheck.godpenai.com",
+  "appPort": 8000,
+  "frontendPort": 3000,
+  "healthCheckPath": "/docs",
+  "startCmd": "uvicorn app.main:app --host 0.0.0.0 --port 8000",
+  "buildCmd": "npm run build",
+  "serverDir": "backend",
+  "frontendDir": "frontend",
+  "envFile": ".env"
+}

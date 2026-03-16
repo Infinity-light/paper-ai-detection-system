@@ -20,6 +20,7 @@
 - **ORM**: SQLAlchemy 2.0.23
 - **文档解析**: python-docx 1.1.0
 - **中文分词**: jieba 0.42.1
+- **Embedding**: SiliconFlow API (BAAI/bge-m3)
 
 ## 项目结构
 
@@ -74,6 +75,29 @@ cd paper-ai-detection-system
 cp .env.example .env
 
 # 编辑.env文件，配置数据库、Redis、Deepseek API等
+```
+
+#### 获取 API Key
+
+1. **Deepseek API Key**：用于文本改写
+   - 访问 https://platform.deepseek.com
+   - 注册并获取 API Key
+
+2. **SiliconFlow API Key**：用于 Embedding 计算
+   - 访问 https://cloud.siliconflow.cn
+   - 注册并获取 API Key
+   - 新用户有 $1 免费额度
+
+#### 配置示例
+
+```bash
+# 必需配置
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+SILICONFLOW_API_KEY=your_siliconflow_api_key_here
+
+# 可选配置（使用默认值即可）
+SILICONFLOW_API_BASE=https://api.siliconflow.cn
+SILICONFLOW_MODEL=BAAI/bge-m3
 ```
 
 ### 2. Docker部署（推荐）
@@ -148,8 +172,14 @@ celery -A app.tasks.detection_tasks worker --loglevel=info
 
 基于语义距离的精准检测：
 - 使用LLM改写文本
-- 计算原文与改写文本的语义距离
+- 使用 **SiliconFlow Embedding API (BAAI/bge-m3)** 计算原文与改写文本的语义向量
+- 通过余弦相似度计算语义距离
 - AI生成文本距离更小，人类文本距离更大
+
+**技术细节**：
+- Embedding 模型：BAAI/bge-m3（8192 token上下文，1024维向量）
+- 距离计算：余弦距离（1 - 余弦相似度）
+- 超时设置：连接5秒，读取10秒
 
 ### 3. 综合检测
 
@@ -188,6 +218,9 @@ celery -A app.tasks.detection_tasks worker --loglevel=info
 | REDIS_URL | Redis连接URL | redis://localhost:6379/0 |
 | DEEPSEEK_API_KEY | Deepseek API密钥 | - |
 | DEEPSEEK_API_BASE | Deepseek API地址 | https://api.deepseek.com |
+| SILICONFLOW_API_KEY | SiliconFlow API密钥 | - |
+| SILICONFLOW_API_BASE | SiliconFlow API地址 | https://api.siliconflow.cn |
+| SILICONFLOW_MODEL | Embedding模型名称 | BAAI/bge-m3 |
 | UPLOAD_DIR | 上传文件目录 | /data/uploads |
 | RESULT_DIR | 结果文件目录 | /data/results |
 
