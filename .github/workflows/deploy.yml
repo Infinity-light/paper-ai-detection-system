@@ -90,10 +90,11 @@ jobs:
             # 克隆或更新项目
             if [ ! -d "paper-ai-detection-system" ]; then
               echo ">>> 克隆项目..."
-              git clone https://github.com/Infinity-light/paper-ai-detection-system.git
+              git clone https://ghfast.top/https://github.com/Infinity-light/paper-ai-detection-system.git
             else
               echo ">>> 更新项目..."
               cd paper-ai-detection-system
+              git remote set-url origin https://ghfast.top/https://github.com/Infinity-light/paper-ai-detection-system.git
               git pull origin master
               cd /root
             fi
